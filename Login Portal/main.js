@@ -1,5 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const cors = require('cors')
 
 mongoose.connect(
   "mongodb+srv://anilcodes01:anilcodes01@cluster0.kbsq56y.mongodb.net/Login_Portal"
@@ -7,9 +8,10 @@ mongoose.connect(
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 const User = mongoose.model("User", {
-  name: String,
+  username: String,
   email: String,
   password: String,
 });
@@ -18,19 +20,17 @@ const User = mongoose.model("User", {
 
 app.post("/register", async (req, res) => {
   try {
-    const name= req.body.name;
+    const username= req.body.username;
     const email = req.body.email;
     const password = req.body.password;
 
     const existingUser = await User.findOne({ email: email });
     if (existingUser) {
-      res.send({
-        msg: "User already exists in our database!"
-      });
+      return res.status(400).send({error: 'User already exists!'})
     }
 
     const newUser = await User.create({
-        name: name,
+        username: username,
       email : email,
       password : password,
     });
@@ -46,14 +46,14 @@ app.post("/register", async (req, res) => {
 
 app.post("/login", async (req, res) => {
   try {
-    const email = req.body.email;
+    const username = req.body.username;
     const password = req.body.password;
 
     const user = await User.findOne({
-      email: email,
+      username: username,
     });
     if (user && user.password === password) {
-      res.status(200).send("Login successful");
+      res.status(200).send("Login successful!");
     } else {
       res.status(401).send("Invalid username or password!");
     }
